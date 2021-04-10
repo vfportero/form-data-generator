@@ -1,5 +1,6 @@
 var Generator = function() {
 
+
     generate_nif = () => {
         var r = Math.floor(1e8 * Math.random());
         return pad(r.toString(), 8) + calculateLetter(r)
@@ -38,6 +39,16 @@ var Generator = function() {
         return randomstring;
     }
 
+    const CupsChecksumChars = [ 'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E' ];
+
+    generate_cups = (distributionCompanyCode = 21, internalCode = 0) => {
+        distributionCompanyCode = pad(distributionCompanyCode > 0 ? distributionCompanyCode : randomNumer(99), 4);
+        internalCode = pad(internalCode > 0 ? internalCode : randomNumer(999999999999), 12);
+
+        var checkSum = getCupsComputedChecksum(distributionCompanyCode, internalCode);
+        return `ES${distributionCompanyCode}${internalCode}${checkSum}`;
+    }
+
     calculateLetter = (v) => {
         return 'TRWAGMYFPDXBNJZSQVHLCKE'.charAt(v % 23)
     }
@@ -61,6 +72,21 @@ var Generator = function() {
     
     pad = (t, e)  => {
         return (t = t.toString()).length < e ? pad('0' + t, e) : t
+    }
+
+    randomNumer = (max) => {
+        return Math.floor(Math.random() * max);
+    }
+
+    getCupsComputedChecksum = (distributionCompanyCode, internalCode) => {
+        
+        let code = distributionCompanyCode + internalCode;
+        let codeNumber = parseInt(code);
+        var module529 = codeNumber % 529;
+        var c = parseInt(module529 / 23);
+        var r = parseInt(module529 % 23);
+
+        return `${CupsChecksumChars[c]}${CupsChecksumChars[r]}`;
     }
 }
 
