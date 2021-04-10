@@ -1,6 +1,6 @@
 {
-    "name": "Form Data Generator",
-    "description": "Generador datos aleatorios para formularios como DNI, CIF, IBAN, email, etc...",
+    "name": "Generador de datos para formularios",
+    "description": "Generador datos aleatorios válidos para formularios como DNI, CIF, IBAN, email, etc...",
     "version": "1.0",
     "manifest_version": 3,
     "background": {
