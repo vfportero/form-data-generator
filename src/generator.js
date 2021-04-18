@@ -22,16 +22,15 @@ var Generator = function() {
         return 'XYZ'.charAt(r) + pad(t.toString(), 7) + a;
     }
     
-    
-    
+    const EMAIL_ALLOWED_CHARS = 'abcdefghiklmnopqrstuvwxyz';
     generate_email = () => {
-        var allowedChars = 'abcdefghiklmnopqrstuvwxyz';
+        
         var stringLength = 8;
         var randomstring = '';
      
         for (var i=0; i<stringLength; i++) {
-            var rnum = Math.floor(Math.random() * allowedChars.length);
-            randomstring += allowedChars.substring(rnum,rnum+1);
+            var rnum = Math.floor(Math.random() * EMAIL_ALLOWED_CHARS.length);
+            randomstring += EMAIL_ALLOWED_CHARS.substring(rnum,rnum+1);
         }
      
         // Append a domain name
@@ -39,7 +38,100 @@ var Generator = function() {
         return randomstring;
     }
 
-    const CupsChecksumChars = [ 'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E' ];
+    const BANK_CODES = ['2038','0128','1467','2100','2095','0073','2103','0081','3081','0019','0239','0238'];
+
+    generate_iban = () => {
+        let countryCode = 'ES';
+        let bankCode = BANK_CODES[randomNumer(BANK_CODES.length-1)];
+        let branchCode = pad(randomNumer(9999),4);
+        let accountNumber = pad(randomNumer(9999999999), 10);
+
+        let accountCheckDigits = calculateBankAccountCheckDigit(bankCode, branchCode, accountNumber);
+        
+        let accountBankNumber = bankCode.toString() + branchCode.toString() + accountCheckDigits.toString() + accountNumber.toString();
+        let ibanCheckDigits = calculateIbanCheckDigit(countryCode, accountBankNumber);
+        return countryCode + ibanCheckDigits.toString() + accountBankNumber;
+    }
+
+    calculateBankAccountCheckDigit = ( bankCode, branchCode, accountNumber ) => {
+
+        let first  = 0,
+            second = 0,
+            calc   = 0;
+    
+        let multi = new Array( 1, 2, 4, 8, 5, 10, 9, 7, 3, 6 );
+    
+        bankCode.split('').forEach((v,i) => {
+            calc += ( parseInt(v) * multi[i + 2] );
+        });
+        branchCode.split('').forEach((v,i) => {
+            calc += ( parseInt(v) * multi[i + 6] );
+        });
+    
+        calc = 11 - ( calc % 11 );
+    
+        switch (calc) {
+            case 10:
+                first = 1;
+                break;
+            case 11:
+                first = 0;
+                break;
+            default:
+                first = calc;
+                break;
+        }
+    
+        calc = 0;
+    
+        accountNumber.split('').forEach((v,i) => {
+            calc += ( parseInt(v) * multi[i] );
+        });
+        
+    
+        calc = 11 - ( calc % 11 );
+    
+        switch (calc) {
+            case 10:
+                second = 1;
+                break;
+            case 11:
+                second = 0;
+                break;
+            default:
+                second = calc;
+                break;
+        }
+    
+        return first.toString() + second.toString();
+    }
+
+    calculateIbanCheckDigit = (countryCode, accountBankNumber  ) => {
+        
+        let ccc = accountBankNumber;
+        countryCode.split('').forEach((v,i) => {
+            ccc += (v.charCodeAt(0)-55);
+        });
+
+        ccc+='00';
+
+        let checkDigit = pad(98 - module(ccc, 97), 2);
+        return checkDigit;
+    }
+
+    module = ( divident, divisor ) => {
+        var partLength = 10;
+    
+        while (divident.length > partLength) {
+            var part = divident.substring(0, partLength);
+            divident = (part % divisor) +  divident.substring(partLength);          
+        }
+    
+        return divident % divisor;
+    }
+
+
+    const CUPS_CHECKSUM_CHARS = [ 'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E' ];
 
     generate_cups = (distributionCompanyCode = 21, internalCode = 0) => {
         distributionCompanyCode = pad(distributionCompanyCode > 0 ? distributionCompanyCode : randomNumer(99), 4);
@@ -70,8 +162,8 @@ var Generator = function() {
         o) : calculateLetter(cif)
     }
     
-    pad = (t, e)  => {
-        return (t = t.toString()).length < e ? pad('0' + t, e) : t
+    pad = (value, length)  => {
+        return (value = value.toString()).length < length ? pad('0' + value, length) : value
     }
 
     randomNumer = (max) => {
@@ -86,7 +178,7 @@ var Generator = function() {
         var c = parseInt(module529 / 23);
         var r = parseInt(module529 % 23);
 
-        return `${CupsChecksumChars[c]}${CupsChecksumChars[r]}`;
+        return `${CUPS_CHECKSUM_CHARS[c]}${CUPS_CHECKSUM_CHARS[r]}`;
     }
 }
 

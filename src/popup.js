@@ -1,4 +1,4 @@
-let values = ['nif', 'cif', 'nie', 'email', 'cups'];
+let values = ['nif', 'cif', 'nie', 'email', 'iban', 'cups'];
 let generator = new Generator();
 
 
